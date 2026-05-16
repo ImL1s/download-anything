@@ -69,6 +69,20 @@ class _HomePageState extends ConsumerState<HomePage> {
     final cookiesExistsAsync = ref.watch(cookiesExistsProvider);
     final isYouTube = _decision != null && _isYouTubeHost(_decision!.host);
 
+    // Share intent WARN consent flow — main_shell 把 URL 寫進 provider 並切到 home tab，
+    // 這裡接 prefill + classify + 馬上 clear provider 避免重複觸發
+    ref.listen<String?>(pendingShareUrlForReviewProvider, (prev, next) {
+      if (next == null || next.isEmpty) return;
+      _controller.text = next;
+      _classify(next);
+      // Clear immediately after consumption
+      Future.microtask(() {
+        if (mounted) {
+          ref.read(pendingShareUrlForReviewProvider.notifier).state = null;
+        }
+      });
+    });
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Personal Media Archiver'),

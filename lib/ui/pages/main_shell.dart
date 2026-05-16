@@ -49,16 +49,17 @@ class MainShell extends ConsumerWidget {
           return;
         }
         if (decision.verdict == PolicyVerdict.warn) {
-          // WARN：要求 user consent，不自動 enqueue
+          // WARN：要求 user consent — prefill URL 到首頁 textfield + 切首頁 tab，
+          // user 看到完整 URL + policy banner 決定要不要 download (NOT auto-enqueue)
+          ref.read(pendingShareUrlForReviewProvider.notifier).state = url;
+          ref.read(selectedTabProvider.notifier).state = 0;
           messenger?.showSnackBar(
             SnackBar(
-              content: Text('分享網址未知來源（${decision.host}）— 請至首頁手動確認再下載'),
+              content: Text('分享網址未知來源（${decision.host}）— 已預填到首頁，請確認後按「開始下載」'),
               backgroundColor: Colors.orange.shade700,
               duration: const Duration(seconds: 5),
             ),
           );
-          // 切到首頁讓 user 看到 URL 已預填
-          ref.read(selectedTabProvider.notifier).state = 0;
           return;
         }
         // verdict == ALLOW → 政策明確放行，可自動 enqueue

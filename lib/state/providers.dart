@@ -79,6 +79,12 @@ final shareUrlStreamProvider = StreamProvider<String>((ref) {
   return channel.receiveBroadcastStream().map((event) => event as String);
 });
 
+/// WARN verdict 分享網址暫存 — 給 home_page 預填 textfield 讓 user 手動確認再下載。
+/// 流程：main_shell ref.listen(shareUrlStreamProvider) 收到 WARN → 寫入此 provider
+/// + 切 home tab → home_page ref.listen 讀到非 null → 寫入 _controller + classify
+/// → user 看到完整 URL + policy banner，自己決定要不要 download。consumer 用完 set null。
+final pendingShareUrlForReviewProvider = StateProvider<String?>((ref) => null);
+
 /// 自動匯入結果 — main_shell 觀察 cookiesShareStreamProvider 並用 CookiesService 處理
 class CookiesAutoImportResult {
   const CookiesAutoImportResult.success(this.meta) : error = null;
