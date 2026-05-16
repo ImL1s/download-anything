@@ -2,8 +2,8 @@
 
 **Language**: [English](./README.en.md) · **繁體中文**
 
-[![CI](https://github.com/ImL1s/download-anything/actions/workflows/ci.yml/badge.svg)](https://github.com/ImL1s/download-anything/actions/workflows/ci.yml)
-[![Release APK](https://github.com/ImL1s/download-anything/actions/workflows/release.yml/badge.svg)](https://github.com/ImL1s/download-anything/actions/workflows/release.yml)
+[![CI](https://github.com/ImL1s/personal-media-archiver/actions/workflows/ci.yml/badge.svg)](https://github.com/ImL1s/personal-media-archiver/actions/workflows/ci.yml)
+[![Release APK](https://github.com/ImL1s/personal-media-archiver/actions/workflows/release.yml/badge.svg)](https://github.com/ImL1s/personal-media-archiver/actions/workflows/release.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Platform: Android 7+](https://img.shields.io/badge/Platform-Android%207%2B-3DDC84?logo=android&logoColor=white)](#平台支援)
 
@@ -190,7 +190,7 @@ YouTube 因 Google 反爬機制（含 bot challenge / PoToken）越來越擋無 
 
 ## 發佈 / Release
 
-PMA 的 APK 由 GitHub Actions 自動 build + 發佈到 [Releases](https://github.com/ImL1s/download-anything/releases) 頁面。
+PMA 的 APK 由 GitHub Actions 自動 build + 發佈到 [Releases](https://github.com/ImL1s/personal-media-archiver/releases) 頁面。
 
 **觸發新 release**（maintainer）：
 

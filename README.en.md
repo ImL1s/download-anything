@@ -2,8 +2,8 @@
 
 **Language**: **English** · [繁體中文](./README.md)
 
-[![CI](https://github.com/ImL1s/download-anything/actions/workflows/ci.yml/badge.svg)](https://github.com/ImL1s/download-anything/actions/workflows/ci.yml)
-[![Release APK](https://github.com/ImL1s/download-anything/actions/workflows/release.yml/badge.svg)](https://github.com/ImL1s/download-anything/actions/workflows/release.yml)
+[![CI](https://github.com/ImL1s/personal-media-archiver/actions/workflows/ci.yml/badge.svg)](https://github.com/ImL1s/personal-media-archiver/actions/workflows/ci.yml)
+[![Release APK](https://github.com/ImL1s/personal-media-archiver/actions/workflows/release.yml/badge.svg)](https://github.com/ImL1s/personal-media-archiver/actions/workflows/release.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Platform: Android 7+](https://img.shields.io/badge/Platform-Android%207%2B-3DDC84?logo=android&logoColor=white)](#platform-support)
 
@@ -212,7 +212,7 @@ private directory and are deleted on uninstall.
 ## Release
 
 PMA APKs are automatically built and published to the
-[Releases](https://github.com/ImL1s/download-anything/releases) page by GitHub Actions.
+[Releases](https://github.com/ImL1s/personal-media-archiver/releases) page by GitHub Actions.
 
 **Cutting a new release** (maintainer):
 
