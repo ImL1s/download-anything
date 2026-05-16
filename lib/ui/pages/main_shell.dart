@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../core/cookies/cookies_service.dart';
-import '../../core/models/policy_decision.dart';
 import '../../state/providers.dart';
+import '../../state/share_url_handler.dart';
 import 'home_page.dart';
 import 'library_page.dart';
 import 'queue_page.dart';
@@ -36,50 +36,49 @@ class MainShell extends ConsumerWidget {
     ref.listen<AsyncValue<String>>(shareUrlStreamProvider, (prev, next) {
       next.whenData((url) async {
         final policy = ref.read(policyProvider);
-        final decision = policy.classify(url);
+        final action = classifyShare(url, policy);
         final messenger = ScaffoldMessenger.maybeOf(context);
-        if (decision.verdict == PolicyVerdict.block) {
-          messenger?.showSnackBar(
-            SnackBar(
-              content: Text('分享的網址被政策擋下：${decision.reason}'),
-              backgroundColor: Colors.red.shade700,
-              duration: const Duration(seconds: 4),
-            ),
-          );
-          return;
-        }
-        if (decision.verdict == PolicyVerdict.warn) {
-          // WARN：要求 user consent — prefill URL 到首頁 textfield + 切首頁 tab，
-          // user 看到完整 URL + policy banner 決定要不要 download (NOT auto-enqueue)
-          ref.read(pendingShareUrlForReviewProvider.notifier).state = url;
-          ref.read(selectedTabProvider.notifier).state = 0;
-          messenger?.showSnackBar(
-            SnackBar(
-              content: Text('分享網址未知來源（${decision.host}）— 已預填到首頁，請確認後按「開始下載」'),
-              backgroundColor: Colors.orange.shade700,
-              duration: const Duration(seconds: 5),
-            ),
-          );
-          return;
-        }
-        // verdict == ALLOW → 政策明確放行，可自動 enqueue
-        try {
-          final task = await ref.read(taskControllerProvider.notifier).enqueue(url);
-          messenger?.showSnackBar(
-            SnackBar(
-              content: Text('已從分享建立下載：${task.filename}'),
-              backgroundColor: Colors.green.shade700,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-          ref.read(selectedTabProvider.notifier).state = 1;
-        } catch (e) {
-          messenger?.showSnackBar(
-            SnackBar(
-              content: Text('分享下載失敗：$e'),
-              backgroundColor: Colors.red.shade700,
-            ),
-          );
+        switch (action) {
+          case ShareUrlBlocked():
+            messenger?.showSnackBar(
+              SnackBar(
+                content: Text('分享的網址被政策擋下：${action.decision.reason}'),
+                backgroundColor: Colors.red.shade700,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+          case ShareUrlNeedsConsent(:final url):
+            // WARN: prefill home textfield, switch home tab, user must click 開始下載
+            ref.read(pendingShareUrlForReviewProvider.notifier).state = url;
+            ref.read(selectedTabProvider.notifier).state = 0;
+            messenger?.showSnackBar(
+              SnackBar(
+                content: Text(
+                    '分享網址未知來源（${action.decision.host}）— 已預填到首頁，請確認後按「開始下載」'),
+                backgroundColor: Colors.orange.shade700,
+                duration: const Duration(seconds: 5),
+              ),
+            );
+          case ShareUrlAutoEnqueue(:final url):
+            try {
+              final task =
+                  await ref.read(taskControllerProvider.notifier).enqueue(url);
+              messenger?.showSnackBar(
+                SnackBar(
+                  content: Text('已從分享建立下載：${task.filename}'),
+                  backgroundColor: Colors.green.shade700,
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+              ref.read(selectedTabProvider.notifier).state = 1;
+            } catch (e) {
+              messenger?.showSnackBar(
+                SnackBar(
+                  content: Text('分享下載失敗：$e'),
+                  backgroundColor: Colors.red.shade700,
+                ),
+              );
+            }
         }
       });
     });
