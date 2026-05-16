@@ -30,6 +30,16 @@ backend, no accounts, no telemetry.
 - 🛡️ **Zero telemetry by default**: no analytics, no crash reporting, no cloud sync
 - 🎨 **Material 3 Expressive + Atkinson Hyperlegible**: accessibility-first, high readability
 
+## Screenshots
+
+Real device — Samsung Galaxy Note 9 (Android 10, 1080×2220):
+
+| Home / New | Queue | Library |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/01-home.png" width="240" alt="Home tab"> | <img src="docs/screenshots/02-queue.png" width="240" alt="Queue tab"> | <img src="docs/screenshots/03-library.png" width="240" alt="Library tab"> |
+| **Settings** | **Policy ALLOW (YouTube → green)** | **Policy BLOCK (Netflix → red)** |
+| <img src="docs/screenshots/04-settings.png" width="240" alt="Settings tab"> | <img src="docs/screenshots/05-policy-allow-youtube.png" width="240" alt="Policy ALLOW for YouTube"> | <img src="docs/screenshots/06-policy-block-netflix.png" width="240" alt="Policy BLOCK for Netflix"> |
+
 ## Acceptable Use (important)
 
 ```

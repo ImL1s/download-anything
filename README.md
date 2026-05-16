@@ -26,6 +26,16 @@ PMA 是一個 **個人媒體歸檔（archiver）**，不是通用下載器。它
 - 🛡️ **預設零遙測**：沒有 analytics、沒有 crash reporting、沒有雲端同步
 - 🎨 **Material 3 Expressive + Atkinson Hyperlegible**：無障礙、可讀性高
 
+## 截圖
+
+實機 Samsung Galaxy Note 9（Android 10, 1080×2220）：
+
+| 首頁 / 新增 | 佇列 | 媒體庫 |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/01-home.png" width="240" alt="Home tab"> | <img src="docs/screenshots/02-queue.png" width="240" alt="Queue tab"> | <img src="docs/screenshots/03-library.png" width="240" alt="Library tab"> |
+| **設定** | **政策 ALLOW（YouTube → 綠）** | **政策 BLOCK（Netflix → 紅）** |
+| <img src="docs/screenshots/04-settings.png" width="240" alt="Settings tab"> | <img src="docs/screenshots/05-policy-allow-youtube.png" width="240" alt="Policy ALLOW for YouTube"> | <img src="docs/screenshots/06-policy-block-netflix.png" width="240" alt="Policy BLOCK for Netflix"> |
+
 ## 使用守則（重要）
 
 ```
