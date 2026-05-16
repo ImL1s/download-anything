@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../core/cookies/cookies_service.dart';
+import '../../core/models/policy_decision.dart';
 import '../../state/providers.dart';
 import 'home_page.dart';
 import 'library_page.dart';
@@ -24,6 +25,63 @@ class MainShell extends ConsumerWidget {
     final tasks = ref.watch(taskControllerProvider);
     final activeCount = tasks.where((t) => t.task.isActive).length;
     final index = ref.watch(selectedTabProvider);
+
+    // 訂閱 share URL intent — 其他 app (YouTube/Twitter/Chrome) share 一個 link 過來
+    // 安全策略：
+    //   - verdict == ALLOW（明確政策放行）→ 自動 enqueue + SnackBar + 切佇列 tab
+    //   - verdict == WARN（未知 host，平衡 mode）→ 不自動 enqueue，顯示 SnackBar 引導 user 手動到首頁確認
+    //   - verdict == BLOCK → 顯示 SnackBar 告知被擋
+    // 為什麼不在 WARN 自動 enqueue：MainActivity 是 exported，任何 app 都能送 ACTION_SEND；
+    // SnackBar 在 enqueue 後出現等於事後通知，不是 user consent — 必須在 verdict 不夠強時要求 user 互動。
+    ref.listen<AsyncValue<String>>(shareUrlStreamProvider, (prev, next) {
+      next.whenData((url) async {
+        final policy = ref.read(policyProvider);
+        final decision = policy.classify(url);
+        final messenger = ScaffoldMessenger.maybeOf(context);
+        if (decision.verdict == PolicyVerdict.block) {
+          messenger?.showSnackBar(
+            SnackBar(
+              content: Text('分享的網址被政策擋下：${decision.reason}'),
+              backgroundColor: Colors.red.shade700,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+          return;
+        }
+        if (decision.verdict == PolicyVerdict.warn) {
+          // WARN：要求 user consent，不自動 enqueue
+          messenger?.showSnackBar(
+            SnackBar(
+              content: Text('分享網址未知來源（${decision.host}）— 請至首頁手動確認再下載'),
+              backgroundColor: Colors.orange.shade700,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+          // 切到首頁讓 user 看到 URL 已預填
+          ref.read(selectedTabProvider.notifier).state = 0;
+          return;
+        }
+        // verdict == ALLOW → 政策明確放行，可自動 enqueue
+        try {
+          final task = await ref.read(taskControllerProvider.notifier).enqueue(url);
+          messenger?.showSnackBar(
+            SnackBar(
+              content: Text('已從分享建立下載：${task.filename}'),
+              backgroundColor: Colors.green.shade700,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+          ref.read(selectedTabProvider.notifier).state = 1;
+        } catch (e) {
+          messenger?.showSnackBar(
+            SnackBar(
+              content: Text('分享下載失敗：$e'),
+              backgroundColor: Colors.red.shade700,
+            ),
+          );
+        }
+      });
+    });
 
     // 訂閱 cookies share intent — Firefox 等 app share 過來會自動 import + SnackBar
     ref.listen<AsyncValue<String>>(cookiesShareStreamProvider, (prev, next) {

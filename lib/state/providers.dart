@@ -71,6 +71,14 @@ final cookiesShareStreamProvider = StreamProvider<String>((ref) {
   return channel.receiveBroadcastStream().map((event) => event as String);
 });
 
+/// 監聽 native EventChannel `dev.pma/share_url` 推來的 URL 字串
+/// （YouTube/Twitter/Chrome 等 app 透過 Android share intent 分享 link 到 PMA）
+/// Stream emits raw URL string；UI 端訂閱後自動 enqueue 下載任務
+final shareUrlStreamProvider = StreamProvider<String>((ref) {
+  const channel = EventChannel('dev.pma/share_url');
+  return channel.receiveBroadcastStream().map((event) => event as String);
+});
+
 /// 自動匯入結果 — main_shell 觀察 cookiesShareStreamProvider 並用 CookiesService 處理
 class CookiesAutoImportResult {
   const CookiesAutoImportResult.success(this.meta) : error = null;

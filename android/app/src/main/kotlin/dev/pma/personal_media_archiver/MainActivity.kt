@@ -1,6 +1,7 @@
 package dev.pma.personal_media_archiver
 
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.net.Uri
 import android.util.Base64
 import android.util.Log
@@ -31,15 +32,24 @@ class MainActivity : FlutterActivity() {
         private const val METHOD_CHANNEL = "dev.pma/ytdl"
         private const val EVENT_CHANNEL = "dev.pma/ytdl_events"
         private const val COOKIES_SHARE_CHANNEL = "dev.pma/cookies_share"
+        private const val SHARE_URL_CHANNEL = "dev.pma/share_url"
     }
+
+    /// debug-only gate for ADB QA hooks — release build (Play Store APK) 一律 false
+    /// 取代 BuildConfig.DEBUG（後者需 buildFeatures.buildConfig=true）以避免 build.gradle 改動
+    private val isDebuggable: Boolean
+        get() = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var eventSink: EventChannel.EventSink? = null
     private var cookiesShareSink: EventChannel.EventSink? = null
+    private var shareUrlSink: EventChannel.EventSink? = null
     private var ytdlInitialized = false
     private val ytdlInitLock = Any()
-    // 緩衝：若 Dart 端還沒 attach EventChannel 就先 buffer 第一筆 share content
-    private var pendingCookiesShare: String? = null
+    // 緩衝：若 Dart 端還沒 attach EventChannel 就 buffer 多筆 share content
+    // （cold start 期間 user 可能連續分享多個 URL）
+    private val pendingCookiesShare = ArrayDeque<String>()
+    private val pendingShareUrl = ArrayDeque<String>()
 
     /// 進行中工作 id -> 對應的 cancellation flag。
     /// YoutubeDL.destroyProcessById 可以中斷正在跑的 process。
@@ -73,15 +83,31 @@ class MainActivity : FlutterActivity() {
         ).setStreamHandler(object : EventChannel.StreamHandler {
             override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
                 cookiesShareSink = events
-                // 把 attach 前 buffer 的 share content flush 給 Dart
-                pendingCookiesShare?.let {
-                    events?.success(it)
-                    pendingCookiesShare = null
+                // Drain buffered shares — 不漏掉 cold-start 連續分享
+                while (pendingCookiesShare.isNotEmpty()) {
+                    events?.success(pendingCookiesShare.removeFirst())
                 }
             }
 
             override fun onCancel(arguments: Any?) {
                 cookiesShareSink = null
+            }
+        })
+
+        // Share URL channel — 其他 app（YouTube/Twitter/Firefox/Chrome）share 一個 URL 過來
+        EventChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            SHARE_URL_CHANNEL,
+        ).setStreamHandler(object : EventChannel.StreamHandler {
+            override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                shareUrlSink = events
+                while (pendingShareUrl.isNotEmpty()) {
+                    events?.success(pendingShareUrl.removeFirst())
+                }
+            }
+
+            override fun onCancel(arguments: Any?) {
+                shareUrlSink = null
             }
         })
 
@@ -112,7 +138,7 @@ class MainActivity : FlutterActivity() {
     private fun maybeRunAdbShareCookies(intent: Intent?) {
         // Security gate: 同 maybeRunAdbTestUrl — debug only。release 不允許外部 app
         // 透過 ADB-style intent extra 替換 user cookies。
-        if (!BuildConfig.DEBUG) return
+        if (!isDebuggable) return
         if (intent == null) return
         val b64 = intent.getStringExtra("pma_share_cookies_b64")?.takeIf { it.isNotBlank() } ?: return
         try {
@@ -124,7 +150,7 @@ class MainActivity : FlutterActivity() {
                     if (cookiesShareSink != null) {
                         cookiesShareSink?.success(decoded)
                     } else {
-                        pendingCookiesShare = decoded
+                        pendingCookiesShare.addLast(decoded)
                     }
                 }
             }
@@ -160,25 +186,56 @@ class MainActivity : FlutterActivity() {
                     return@launch
                 }
 
-                // 簡易 heuristic 過濾：必須像 cookies file
-                if (!content.contains("# Netscape HTTP Cookie File") &&
-                    !content.contains("youtube.com")) {
-                    Log.w(TAG, "share content doesn't look like cookies file (len=${content.length})")
-                    return@launch
-                }
+                // 路由：cookies file vs URL share
+                // (1) cookies file: Netscape header 或 含 youtube.com 行 → cookies channel
+                // (2) URL share: 純 URL 字串（http(s):// 開頭，整個 trim 後是 single token URL）→ share_url channel
+                val trimmed = content.trim()
+                val isCookiesFile = content.contains("# Netscape HTTP Cookie File") ||
+                    content.contains("\t.youtube.com\t") ||
+                    content.contains("\tyoutube.com\t")
+                val isShareUrl = !isCookiesFile && isLikelySingleUrl(trimmed)
 
-                Log.i(TAG, "received cookies share (len=${content.length}); pushing to Dart")
-                withContext(Dispatchers.Main) {
-                    if (cookiesShareSink != null) {
-                        cookiesShareSink?.success(content)
-                    } else {
-                        // Dart 還沒 attach EventChannel — buffer 給之後 flush
-                        pendingCookiesShare = content
+                when {
+                    isCookiesFile -> {
+                        Log.i(TAG, "received cookies share (len=${content.length}); pushing to cookies channel")
+                        withContext(Dispatchers.Main) {
+                            if (cookiesShareSink != null) {
+                                cookiesShareSink?.success(content)
+                            } else {
+                                pendingCookiesShare.addLast(content)
+                            }
+                        }
+                    }
+                    isShareUrl -> {
+                        Log.i(TAG, "received share URL: $trimmed; pushing to share_url channel")
+                        withContext(Dispatchers.Main) {
+                            if (shareUrlSink != null) {
+                                shareUrlSink?.success(trimmed)
+                            } else {
+                                pendingShareUrl.addLast(trimmed)
+                            }
+                        }
+                    }
+                    else -> {
+                        Log.w(TAG, "share content didn't match cookies or URL (len=${content.length})")
                     }
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, "handleShareIntent failed", e)
             }
+        }
+    }
+
+    /// 判斷 trimmed content 是否像 single URL（避免把整篇文章前面有 URL 也當成 URL share）
+    /// 規則：必須 http:// 或 https:// 開頭、長度 <= 2048、沒換行或空白（單一 token）
+    private fun isLikelySingleUrl(content: String): Boolean {
+        if (content.length > 2048) return false
+        if (content.contains('\n') || content.contains(' ') || content.contains('\t')) return false
+        if (!content.startsWith("http://") && !content.startsWith("https://")) return false
+        return try {
+            java.net.URI(content).host?.isNotBlank() == true
+        } catch (_: Throwable) {
+            false
         }
     }
 
@@ -201,7 +258,7 @@ class MainActivity : FlutterActivity() {
         // Security gate: ADB QA hooks are exported via MainActivity (MAIN intent-filter
         // forces android:exported="true"). 任何 app 都能 `am start` 觸發 — release build
         // 必須關掉這 attack surface，只在 debug build 開啟給開發者 ADB e2e 用。
-        if (!BuildConfig.DEBUG) return
+        if (!isDebuggable) return
         val testUrl = intent?.getStringExtra("pma_test_url")?.takeIf { it.isNotBlank() } ?: return
         val cookiesPath = intent?.getStringExtra("pma_cookies_path")?.takeIf { it.isNotBlank() }
         val taskId = "adb-test-${System.currentTimeMillis()}"
