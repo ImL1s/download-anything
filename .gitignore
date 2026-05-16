@@ -1,0 +1,84 @@
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+
+# Android
+android/.gradle/
+android/captures/
+android/gradlew
+android/gradlew.bat
+android/local.properties
+android/**/GeneratedPluginRegistrant.java
+android/key.properties
+android/app/release/
+android/app/debug/
+android/app/profile/
+android/app/build/
+android/app/.cxx/
+android/.kotlin/
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/App.framework
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/app.flx
+ios/Flutter/app.zip
+ios/Flutter/flutter_assets/
+ios/Flutter/flutter_export_environment.sh
+ios/ServiceDefinitions.json
+ios/Runner/GeneratedPluginRegistrant.*
+
+# macOS
+macos/Pods/
+macos/Flutter/ephemeral/
+macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Linux/Windows
+linux/flutter/ephemeral/
+windows/flutter/ephemeral/
+
+# fvm
+.fvm/
+.fvmrc
+
+# macOS system
+.DS_Store
+
+# Logs
+*.log
+
+# Generated
+*.g.dart
+*.freezed.dart
+
+# Local config
+.claude/settings.local.json
+
+# OMC artifacts (keep handoffs + autopilot reports for context, ignore live state)
+.omc/state/
+.omc/notepad.md
+.omc/project-memory.json
+.omc/plans/
+.omc/research/
+.omc/logs/
+.omc/artifacts/
+
+# IDE
+*.swp
+*.swo
+
+# OMX runtime artifacts (process state, session metadata, hook logs — contain prompt previews)
+.omx/
