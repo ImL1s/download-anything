@@ -2,6 +2,11 @@
 
 **Language**: [English](./README.en.md) · **繁體中文**
 
+[![CI](https://github.com/ImL1s/download-anything/actions/workflows/ci.yml/badge.svg)](https://github.com/ImL1s/download-anything/actions/workflows/ci.yml)
+[![Release APK](https://github.com/ImL1s/download-anything/actions/workflows/release.yml/badge.svg)](https://github.com/ImL1s/download-anything/actions/workflows/release.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Platform: Android 7+](https://img.shields.io/badge/Platform-Android%207%2B-3DDC84?logo=android&logoColor=white)](#平台支援)
+
 > 個人媒體保存工具 — Android、無後端、本機優先、開源精神。
 
 PMA 是一個 **個人媒體歸檔（archiver）**，不是通用下載器。它的核心理念是：
@@ -182,6 +187,37 @@ YouTube 因 Google 反爬機制（含 bot challenge / PoToken）越來越擋無 
 - 不要分享 cookies 給他人（含 session token，可被冒用）
 - 設定 → 進階 → YouTube cookies → 刪除：可隨時清除
 - 失敗訊息含 `[NEEDS_COOKIES]` 表示此來源需要 cookies；UI 會引導至設定頁
+
+## 發佈 / Release
+
+PMA 的 APK 由 GitHub Actions 自動 build + 發佈到 [Releases](https://github.com/ImL1s/download-anything/releases) 頁面。
+
+**觸發新 release**（maintainer）：
+
+```bash
+# 1. 確認 main 分支 analyze + test 全綠
+fvm flutter analyze && fvm flutter test
+
+# 2. bump pubspec.yaml 的 version 欄位（例：0.1.0+1 → 0.2.0+2）
+#    semver: MAJOR.MINOR.PATCH+BUILD_NUMBER
+
+# 3. commit 變更
+git add pubspec.yaml CHANGELOG.md
+git commit -m "chore: bump to v0.2.0"
+git push
+
+# 4. 打 tag 並 push — 觸發 release.yml
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+GitHub Actions 會：
+1. 重跑 analyze + test
+2. 跑 `flutter build apk --release --split-per-abi` + universal APK
+3. 把 4 個 APK（arm64-v8a / armeabi-v7a / x86_64 / universal）上傳到對應 tag 的 GitHub Release
+4. 自動產生 release notes（從上次 tag 以來的 commit）
+
+**簽名說明**：CI 出來的 APK 用 Flutter debug keystore 簽，可 sideload 但無法上 Google Play。要做 production signing 需另存 keystore 至 GitHub Secrets 並改 `android/app/build.gradle.kts` signing config。
 
 ## License
 

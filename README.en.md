@@ -2,6 +2,11 @@
 
 **Language**: **English** · [繁體中文](./README.md)
 
+[![CI](https://github.com/ImL1s/download-anything/actions/workflows/ci.yml/badge.svg)](https://github.com/ImL1s/download-anything/actions/workflows/ci.yml)
+[![Release APK](https://github.com/ImL1s/download-anything/actions/workflows/release.yml/badge.svg)](https://github.com/ImL1s/download-anything/actions/workflows/release.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Platform: Android 7+](https://img.shields.io/badge/Platform-Android%207%2B-3DDC84?logo=android&logoColor=white)](#platform-support)
+
 > A personal media archiving tool — Android, no backend, local-first, open-source ethos.
 
 PMA is a **personal media archiver**, not a general-purpose downloader. Its core
@@ -203,6 +208,42 @@ private directory and are deleted on uninstall.
 - Settings → Advanced → YouTube cookies → Delete: clears at any time
 - Error messages containing `[NEEDS_COOKIES]` indicate the source requires
   cookies; the UI will guide you to the settings page
+
+## Release
+
+PMA APKs are automatically built and published to the
+[Releases](https://github.com/ImL1s/download-anything/releases) page by GitHub Actions.
+
+**Cutting a new release** (maintainer):
+
+```bash
+# 1. Ensure analyze + test pass on main
+fvm flutter analyze && fvm flutter test
+
+# 2. Bump the `version` field in pubspec.yaml (e.g. 0.1.0+1 → 0.2.0+2)
+#    semver: MAJOR.MINOR.PATCH+BUILD_NUMBER
+
+# 3. Commit
+git add pubspec.yaml CHANGELOG.md
+git commit -m "chore: bump to v0.2.0"
+git push
+
+# 4. Tag and push — triggers release.yml
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+GitHub Actions will then:
+1. Re-run analyze + tests
+2. Run `flutter build apk --release --split-per-abi` + universal APK
+3. Upload the four APKs (arm64-v8a / armeabi-v7a / x86_64 / universal) to a
+   GitHub Release for the tag
+4. Auto-generate release notes (from commits since the previous tag)
+
+**Signing**: APKs produced by CI are signed with Flutter's debug keystore —
+suitable for sideload but not for Google Play distribution. To enable
+production signing, store a keystore in GitHub Secrets and update the
+signing config in `android/app/build.gradle.kts`.
 
 ## License
 
