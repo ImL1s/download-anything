@@ -64,8 +64,8 @@ windows/flutter/ephemeral/
 *.g.dart
 *.freezed.dart
 
-# Local config
-.claude/settings.local.json
+# Claude Code local runtime (permissions, scheduled task locks)
+.claude/
 
 # OMC artifacts (keep handoffs + autopilot reports for context, ignore live state)
 .omc/state/
