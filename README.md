@@ -1,5 +1,7 @@
 # Personal Media Archiver (PMA)
 
+**Language**: [English](./README.en.md) · **繁體中文**
+
 > 個人媒體保存工具 — Android、無後端、本機優先、開源精神。
 
 PMA 是一個 **個人媒體歸檔（archiver）**，不是通用下載器。它的核心理念是：
@@ -15,6 +17,7 @@ PMA 是一個 **個人媒體歸檔（archiver）**，不是通用下載器。它
   - 公開社交平台（YouTube、Twitter/X、Threads、TikTok、Instagram、Bilibili、
     Vimeo、SoundCloud、Twitch 等 1000+ 站）：透過 [youtubedl-android](https://github.com/junkfood02/youtubedl-android) 內建的 yt-dlp 擷取
 - 📚 **本機媒體庫**：JSON-based 索引，支援開啟外部播放器
+- 🔗 **Android share intent**：其他 app 分享 URL/cookies 到 PMA 自動接收；URL 走政策三段制（ALLOW 自動下載 / WARN 預填首頁等用戶確認 / BLOCK 拒絕），cookies 自動匯入
 - 🛡️ **預設零遙測**：沒有 analytics、沒有 crash reporting、沒有雲端同步
 - 🎨 **Material 3 Expressive + Atkinson Hyperlegible**：無障礙、可讀性高
 
@@ -117,6 +120,10 @@ android/
 | 媒體庫：列出下載完成檔案、開啟外部播放器、刪除 | ✅ |
 | 設定：政策強度切換、並行下載數調整、yt-dlp 版本顯示、手動觸發更新 | ✅ |
 | YouTube cookies 匯入 + 真機 wiring (logcat 確認 yt-dlp 收到 `--cookies` flag) | ✅ |
+| Share intent: ALLOW URL → 自動 enqueue + 綠色 SnackBar + 切佇列 tab | ✅ |
+| Share intent: WARN URL → 預填首頁 textfield + 橘色 SnackBar 要 user 確認 | ✅ |
+| Share intent: BLOCK URL → 紅色 SnackBar 拒絕（含原因） | ✅ |
+| Share intent: Firefox cookies → 自動 importFromContent + 綠 SnackBar | ✅ |
 | 失敗 task 顯示「匯入 cookies」按鈕（點擊跳設定 tab） | ⏳ mobile-mcp UI 驗 |
 | 媒體庫 sort（時間/檔名/大小）+ search filter | ⏳ mobile-mcp UI 驗 |
 | YouTube URL + 未匯入 cookies hint 卡片 | ⏳ mobile-mcp UI 驗 |
