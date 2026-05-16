@@ -2,6 +2,36 @@
 
 All notable changes to PMA are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased] — 2026-05-16 (round 3: share-URL auto-detect + LICENSE)
+
+### Added — Round 3
+- **Android share intent 第二條 channel — share_url**：其他 app（YouTube/Twitter/Chrome）分享 link → PMA 自動分類
+  - `MainActivity.kt` 加 `SHARE_URL_CHANNEL` + `shareUrlSink` + `pendingShareUrl` ArrayDeque（修 cold-start 多 share 漏失）
+  - `handleShareIntent` 用 heuristic 路由：Netscape cookies signature → cookies channel，其餘 URL → share_url channel
+  - `isLikelySingleUrl` 防呆：len ≤ 2048、單 token、http(s)://、URI.parse host 非空
+  - 安全 gate：ADB QA hook（pma_test_url / pma_share_cookies_b64 / pma_cookies_path）改用 `ApplicationInfo.FLAG_DEBUGGABLE` 判定，release APK 不開放
+- **WARN 共識流程**：政策判 WARN 時不自動下載 — 預填 URL 到首頁 textfield + 切首頁 tab + orange SnackBar 提示，user 看完整 URL + policy banner 後自行決定
+  - 新 provider `pendingShareUrlForReviewProvider`（main_shell 寫 / home_page 讀後 clear）
+- **Pure handler 抽出**：`lib/state/share_url_handler.dart`
+  - `classifyShare(url, policy)` → sealed `ShareUrlAction { Blocked, NeedsConsent, AutoEnqueue }`
+  - `isLikelyShareUrl(content)` Dart side mirror，與 Kotlin native 對齊
+- **新 unit tests（13 個）**：`test/share_url_handler_test.dart` — URL heuristic 6 cases + 政策對映 7 cases（ALLOW/BLOCK/WARN/strict）
+- **Codex stop-review-gate hook**：commit 前自動 ALLOW/BLOCK 評審（Top 3 issues 列表）
+- **LICENSE 檔**：補 Apache-2.0 全文 + GPL-3.0 散布說明（修 GitHub 偵測 `NOASSERTION` 問題）
+
+### Changed — Round 3
+- `main_shell.dart` 從 inline switch 改用 sealed `ShareUrlAction` switch — 邏輯與展示分離
+- `task_controller.dart` cookies 路徑套用：加 `_isYouTubeUrl(url)` host gate，僅 youtube.com / youtu.be / youtube-nocookie.com 才傳 `--cookies` 給 yt-dlp（codex round 1 #1）
+- `cookies_service.dart`：`importFromContent` + `meta` 補 `#HttpOnly_` prefix 處理（codex round 1 #2）— 不再把 HttpOnly cookies 行誤判為註解
+
+### Verified — Round 3
+- ✅ `fvm flutter analyze` 0 issue
+- ✅ `fvm flutter test` 68 tests pass（53 → +2 cookies HttpOnly + 13 share_url_handler）
+- ✅ `fvm flutter build apk --debug` 成功
+- ✅ Note 9 真機 e2e PASS — share URL 三條路徑（ALLOW 自動 enqueue / WARN 預填 / BLOCK SnackBar）皆驗 + 失敗 task 顯示「匯入 cookies」按鈕
+
+---
+
 ## [Unreleased] — 2026-05-16 (round 2: Firefox share intent)
 
 ### Added — Round 2
