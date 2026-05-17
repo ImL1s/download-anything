@@ -36,6 +36,16 @@ PMA 是一個 **個人媒體歸檔（archiver）**，不是通用下載器。它
 | **設定** | **政策 ALLOW（YouTube → 綠）** | **政策 BLOCK（Netflix → 紅）** |
 | <img src="docs/screenshots/04-settings.png" width="240" alt="Settings tab"> | <img src="docs/screenshots/05-policy-allow-youtube.png" width="240" alt="Policy ALLOW for YouTube"> | <img src="docs/screenshots/06-policy-block-netflix.png" width="240" alt="Policy BLOCK for Netflix"> |
 
+### 端到端真實流程
+
+直連 mp4 下載 → 佇列 → 媒體庫，以及 share intent 三段政策（BLOCK / WARN / ALLOW）+ 開源授權頁，全部在 Note 9 真機跑通：
+
+| 下載中（77%） | 已完成入媒體庫 | 開源授權頁 |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/e2e-03-queue-active.png" width="240" alt="Queue downloading 77%"> | <img src="docs/screenshots/e2e-05-library-with-file.png" width="240" alt="Library with completed file"> | <img src="docs/screenshots/e2e-10-license-page.png" width="240" alt="Open-source license page"> |
+| **Share BLOCK（Hami → 紅）** | **Share WARN（unknown → 橘 + 預填）** | **Share ALLOW（YouTube → 綠 + 自動入佇列）** |
+| <img src="docs/screenshots/e2e-06-share-block-hami.png" width="240" alt="Share intent BLOCK for Hami"> | <img src="docs/screenshots/e2e-07-share-warn-unknown.png" width="240" alt="Share intent WARN for unknown host"> | <img src="docs/screenshots/e2e-08-share-allow-youtube.png" width="240" alt="Share intent ALLOW for YouTube"> |
+
 ## 使用守則（重要）
 
 ```
@@ -140,11 +150,11 @@ android/
 | Share intent: BLOCK URL → 紅色 SnackBar 拒絕（含原因） | ✅ |
 | Share intent: Firefox cookies → 自動 importFromContent + 綠 SnackBar | ✅ |
 | 失敗 task 顯示「匯入 cookies」按鈕（點擊跳設定 tab） | ⏳ mobile-mcp UI 驗 |
-| 媒體庫 sort（時間/檔名/大小）+ search filter | ⏳ mobile-mcp UI 驗 |
+| 媒體庫 sort（時間/檔名/大小）+ search filter | ✅ |
 | YouTube URL + 未匯入 cookies hint 卡片 | ⏳ mobile-mcp UI 驗 |
 | Cookies 過期偵測（>5 個月警告） | ⏳ mobile-mcp UI 驗 |
-| 開源授權頁（設定 → 開源授權 → showLicensePage） | ⏳ mobile-mcp UI 驗 |
-| 台灣 OTT BLOCK（Hami/Catchplay/Viu/Vidol/MOD 等） | ⏳ mobile-mcp UI 驗 |
+| 開源授權頁（設定 → 開源授權 → showLicensePage） | ✅ |
+| 台灣 OTT BLOCK（Hami/Catchplay/Viu/Vidol/MOD 等） | ✅ Hami 驗 |
 
 ### 已知 yt-dlp 限制（非整合問題）
 - **YouTube**：2024 之後 YouTube 加強反 bot；許多影片需要 cookies 才能下載。

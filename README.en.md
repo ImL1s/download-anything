@@ -40,6 +40,18 @@ Real device — Samsung Galaxy Note 9 (Android 10, 1080×2220):
 | **Settings** | **Policy ALLOW (YouTube → green)** | **Policy BLOCK (Netflix → red)** |
 | <img src="docs/screenshots/04-settings.png" width="240" alt="Settings tab"> | <img src="docs/screenshots/05-policy-allow-youtube.png" width="240" alt="Policy ALLOW for YouTube"> | <img src="docs/screenshots/06-policy-block-netflix.png" width="240" alt="Policy BLOCK for Netflix"> |
 
+### End-to-end real flow
+
+Direct mp4 download → queue → library, plus the three share-intent policy
+verdicts (BLOCK / WARN / ALLOW) and the open-source license page — all
+exercised on a real Note 9:
+
+| Downloading (77%) | Completed in library | License page |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/e2e-03-queue-active.png" width="240" alt="Queue downloading 77%"> | <img src="docs/screenshots/e2e-05-library-with-file.png" width="240" alt="Library with completed file"> | <img src="docs/screenshots/e2e-10-license-page.png" width="240" alt="Open-source license page"> |
+| **Share BLOCK (Hami → red)** | **Share WARN (unknown → orange + prefill)** | **Share ALLOW (YouTube → green + auto-enqueue)** |
+| <img src="docs/screenshots/e2e-06-share-block-hami.png" width="240" alt="Share intent BLOCK for Hami"> | <img src="docs/screenshots/e2e-07-share-warn-unknown.png" width="240" alt="Share intent WARN for unknown host"> | <img src="docs/screenshots/e2e-08-share-allow-youtube.png" width="240" alt="Share intent ALLOW for YouTube"> |
+
 ## Acceptable Use (important)
 
 ```
@@ -150,11 +162,11 @@ Fully verified on a Samsung Galaxy Note 9 (Android 10, SM-N960F):
 | Share intent: BLOCK URL → red SnackBar reject (with reason) | ✅ |
 | Share intent: Firefox cookies → auto importFromContent + green SnackBar | ✅ |
 | Failed task shows "Import cookies" button (jumps to settings tab) | ⏳ mobile-mcp UI verify |
-| Library sort (time / filename / size) + search filter | ⏳ mobile-mcp UI verify |
+| Library sort (time / filename / size) + search filter | ✅ |
 | YouTube URL + missing-cookies hint card | ⏳ mobile-mcp UI verify |
 | Cookies expiry detection (>5 months warning) | ⏳ mobile-mcp UI verify |
-| Open-source license page (Settings → Open-source licenses → showLicensePage) | ⏳ mobile-mcp UI verify |
-| Taiwan OTT BLOCK (Hami / Catchplay / Viu / Vidol / MOD etc.) | ⏳ mobile-mcp UI verify |
+| Open-source license page (Settings → Open-source licenses → showLicensePage) | ✅ |
+| Taiwan OTT BLOCK (Hami / Catchplay / Viu / Vidol / MOD etc.) | ✅ Hami verified |
 
 ### Known yt-dlp limitations (not integration issues)
 - **YouTube**: post-2024, YouTube tightened anti-bot; many videos require
